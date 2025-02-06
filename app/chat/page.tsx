@@ -8,6 +8,7 @@ interface Message {
   content: string;
   sender: 'user' | 'printer';
   timestamp: Date;
+  isHTML?: boolean;
 }
 
 interface Printer {
@@ -83,17 +84,18 @@ export default function ChatPage() {
     };
   }, [initSocket]);
 
-  const addMessage = (content: string, sender: 'user' | 'printer') => {
+  const addMessage = (content: string, sender: 'user' | 'printer', isHTML: boolean = false) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       content,
       sender,
       timestamp: new Date(),
+      isHTML,
     };
-
+  
     setMessages((prev) => {
       const updatedMessages = [...prev, newMessage];
-      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages)); // Save to localStorage
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       return updatedMessages;
     });
   };
@@ -118,9 +120,14 @@ export default function ChatPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || selectedPrinter !== 'printer-1') return;
-
-    // Send message as an HTML string
-    addMessage(`Hi, your uploaded file is ${file.name}`, 'user');
+  
+    const fileURL = URL.createObjectURL(file);
+  
+    addMessage(
+      `Hi, your uploaded file is <a href="${fileURL}" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">${file.name}</a>`,
+      'user',
+      true
+    );
   
     socket.emit('print_command', {
       printer: 'Office Printer',
@@ -130,8 +137,9 @@ export default function ChatPage() {
     setTimeout(() => {
       addMessage('Hey, file uploaded successfully!', 'printer');
     }, 1000);
+  
+    return () => URL.revokeObjectURL(fileURL);
   };
-
   return (
     <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Printer Chatbot</h1>
@@ -156,19 +164,23 @@ export default function ChatPage() {
       </select>
 
       <div className="flex-1 overflow-y-auto mb-4 border rounded p-4 bg-white">
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`mb-2 p-2 rounded ${
-              message.sender === 'user' ? 'bg-blue-100 ml-auto max-w-[80%] text-black' : 'bg-gray-100 mr-auto max-w-[80%] text-black'
-            }`}
-          >
-            <p>{message.content}</p>
-            <small className="text-gray-500">
-              {new Date(message.timestamp).toLocaleTimeString()}
-            </small>
-          </div>
-        ))}
+      {messages.map((message) => (
+  <div
+    key={message.id}
+    className={`mb-2 p-2 rounded ${
+      message.sender === 'user' ? 'bg-blue-100 ml-auto max-w-[80%] text-black' : 'bg-gray-100 mr-auto max-w-[80%] text-black'
+    }`}
+  >
+    {message.isHTML ? (
+      <div dangerouslySetInnerHTML={{ __html: message.content }} />
+    ) : (
+      <p>{message.content}</p>
+    )}
+    <small className="text-gray-500">
+      {new Date(message.timestamp).toLocaleTimeString()}
+    </small>
+  </div>
+))}
       </div>
 
       <form onSubmit={handleSendMessage} className="flex gap-2">
