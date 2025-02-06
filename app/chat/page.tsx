@@ -124,7 +124,7 @@ export default function ChatPage() {
     const fileURL = URL.createObjectURL(file);
   
     addMessage(
-      `Hi, your uploaded file is <a href="${fileURL}" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">${file.name}</a>`,
+      `Hi, your uploaded file is click to preview : <a href="${fileURL}" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">${file.name}</a>`,
       'user',
       true
     );
