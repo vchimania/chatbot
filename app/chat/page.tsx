@@ -115,18 +115,18 @@ export default function ChatPage() {
 
     setInputMessage('');
   };
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || selectedPrinter !== 'printer-1') return;
 
+    // Send message as an HTML string
     addMessage(`Hi, your uploaded file is ${file.name}`, 'user');
-
+  
     socket.emit('print_command', {
       printer: 'Office Printer',
       command: `Uploaded File: ${file.name}`,
     });
-
+  
     setTimeout(() => {
       addMessage('Hey, file uploaded successfully!', 'printer');
     }, 1000);
@@ -136,8 +136,8 @@ export default function ChatPage() {
     <div className="flex flex-col h-screen max-w-2xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Printer Chatbot</h1>
 
-      <div className={`mb-4 p-2 rounded ${isConnected ? 'bg-green-100' : 'bg-red-100'}`}>
-        Status: {isConnected ? 'Connected' : 'Disconnected'}
+      <div className={`mb-4 p-2 rounded ${isConnected ? 'bg-green-300' : 'bg-red-300'}`}>
+        <div className='text-black'>Status: {isConnected ? 'Connected' : 'Disconnected'}</div>
         {connectionError && <p className="text-red-500 text-sm">{connectionError}</p>}
       </div>
 
