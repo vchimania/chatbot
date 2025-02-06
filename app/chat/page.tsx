@@ -26,6 +26,19 @@ export default function ChatPage() {
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState('');
 
+  // Load messages from localStorage on mount
+  useEffect(() => {
+    const storedMessages = localStorage.getItem('chatMessages');
+    if (storedMessages) {
+      setMessages(JSON.parse(storedMessages));
+    }
+  }, []);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('chatMessages', JSON.stringify(messages));
+  }, [messages]);
+
   const initSocket = useCallback(() => {
     if (socket) {
       socket.disconnect();
@@ -77,7 +90,12 @@ export default function ChatPage() {
       sender,
       timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, newMessage]);
+
+    setMessages((prev) => {
+      const updatedMessages = [...prev, newMessage];
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages)); // Save to localStorage
+      return updatedMessages;
+    });
   };
 
   const handleSendMessage = (e: React.FormEvent) => {
